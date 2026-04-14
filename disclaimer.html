@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disclaimer | Satellite Timelapse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="page-shell">
+    <section class="hero-panel">
+      <p class="eyebrow">Disclaimer</p>
+      <h1>Important usage notes.</h1>
+      <p class="hero-copy">
+        satelliteview is intended as an exploratory visual tool. The information shown here should be interpreted
+        carefully and verified independently before being used for scientific, operational, legal, or safety-critical decisions.
+      </p>
+      <div class="hero-actions">
+        <a class="button learn-more-link" href="./index.html">Back to tool</a>
+      </div>
+    </section>
+
+    <section class="panel learn-more-section">
+      <div class="panel-heading">
+        <div>
+          <p class="panel-kicker">1</p>
+          <h2>Data and availability</h2>
+        </div>
+        <p class="panel-copy">The application depends on third-party public imagery services.</p>
+      </div>
+      <div class="stats-grid learn-more-stats">
+        <article class="stat-card">
+          <span class="status-label">Public sources</span>
+          <strong>External services</strong>
+          <p>Scene search, rendering, and downloads rely on remote public APIs and may change or become unavailable.</p>
+        </article>
+        <article class="stat-card">
+          <span class="status-label">Coverage</span>
+          <strong>Not guaranteed</strong>
+          <p>Search results may be incomplete, filtered, or affected by clouds, acquisition gaps, or service limits.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel learn-more-section">
+      <div class="panel-heading">
+        <div>
+          <p class="panel-kicker">2</p>
+          <h2>Interpretation</h2>
+        </div>
+        <p class="panel-copy">Visual outputs are helpful, but they are not a substitute for formal analysis.</p>
+      </div>
+      <div class="stats-grid learn-more-stats">
+        <article class="stat-card">
+          <span class="status-label">Timelapse view</span>
+          <strong>Exploratory only</strong>
+          <p>Frame alignment, rendering choices, and filtering may affect how changes appear over time.</p>
+        </article>
+        <article class="stat-card">
+          <span class="status-label">Statistics</span>
+          <strong>Summary metrics</strong>
+          <p>Displayed values are convenience summaries and should not be treated as validated measurements.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel learn-more-section">
+      <div class="panel-heading">
+        <div>
+          <p class="panel-kicker">3</p>
+          <h2>Responsibility</h2>
+        </div>
+        <p class="panel-copy">Users remain responsible for how results are used.</p>
+      </div>
+      <div class="analytics-grid learn-more-grid">
+        <article class="stat-card">
+          <span class="status-label">Independent verification</span>
+          <strong>Recommended</strong>
+          <p>Always confirm important findings with original datasets, domain experts, or validated workflows.</p>
+        </article>
+        <article class="stat-card">
+          <span class="status-label">No warranty</span>
+          <strong>Use with care</strong>
+          <p>The tool is provided as-is without guarantees regarding accuracy, completeness, or fitness for a specific purpose.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel learn-more-section">
+      <div class="panel-heading">
+        <div>
+          <p class="panel-kicker">4</p>
+          <h2>Sentinel-2 data and acknowledgments</h2>
+        </div>
+        <p class="panel-copy">This tool depends on public Sentinel-2 imagery and external web services for search and rendering.</p>
+      </div>
+      <div class="stats-grid learn-more-stats">
+        <article class="stat-card">
+          <span class="status-label">Dataset</span>
+          <strong>Copernicus Sentinel-2</strong>
+          <p>The imagery shown here is based on public Sentinel-2 data from the Copernicus programme.</p>
+        </article>
+        <article class="stat-card">
+          <span class="status-label">Search API</span>
+          <strong>Earth Search STAC API</strong>
+          <p>This app queries the Element 84 Earth Search STAC API to discover scenes and read scene metadata.</p>
+        </article>
+        <article class="stat-card">
+          <span class="status-label">Rendering API</span>
+          <strong>TiTiler</strong>
+          <p>This app requests rendered crops through TiTiler in order to display previews, timelapses, and downloads.</p>
+        </article>
+        <article class="stat-card">
+          <span class="status-label">Acknowledge</span>
+          <strong>Credit the sources</strong>
+          <p>When sharing outputs, acknowledge Copernicus Sentinel data together with the public search and rendering services used by this tool.</p>
+        </article>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p>satelliteview</p>
+      <div class="site-footer-links">
+        <a href="./index.html">Back to tool</a>
+        <a href="./learn-more.html">Learn more</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

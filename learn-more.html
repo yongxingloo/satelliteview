@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn More | Satellite Timelapse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="page-shell">
+    <section class="hero-panel">
+      <p class="eyebrow">Guide</p>
+      <h1>How to use satelliteview.</h1>
+      <p class="hero-copy">
+        This tool helps you search public satellite imagery over a selected area, compare overpasses through time,
+        and export the results as a timelapse or a ZIP of individual frames.
+      </p>
+      <div class="hero-actions">
+        <a class="button learn-more-link" href="./index.html">Back to tool</a>
+      </div>
+    </section>
+
+    <section class="panel learn-more-section">
+      <div class="panel-heading">
+        <div>
+          <p class="panel-kicker">1</p>
+          <h2>Select an area</h2>
+        </div>
+        <p class="panel-copy">Use the map to choose where you want to search.</p>
+      </div>
+      <div class="analytics-grid learn-more-grid">
+        <article class="stat-card">
+          <span class="status-label">Draw area</span>
+          <strong>Rectangle mode</strong>
+          <p>Click once for the first corner and once again for the opposite corner.</p>
+        </article>
+        <article class="stat-card">
+          <span class="status-label">Use map view</span>
+          <strong>Current extent</strong>
+          <p>Use the map viewport directly as the search area if you already zoomed into the region you need.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel learn-more-section">
+      <div class="panel-heading">
+        <div>
+          <p class="panel-kicker">2</p>
+          <h2>Configure the search</h2>
+        </div>
+        <p class="panel-copy">The current version is optimized for Sentinel-2 scenes.</p>
+      </div>
+      <div class="stats-grid learn-more-stats">
+        <article class="stat-card">
+          <span class="status-label">Date range</span>
+          <strong>When</strong>
+          <p>Choose the time interval you want to study.</p>
+        </article>
+        <article class="stat-card">
+          <span class="status-label">Cloud cover</span>
+          <strong>Filter</strong>
+          <p>Lower values keep cleaner scenes, but may reduce the number of results.</p>
+        </article>
+        <article class="stat-card">
+          <span class="status-label">Scene limit</span>
+          <strong>Count</strong>
+          <p>Controls how many candidate overpasses are requested from the search API.</p>
+        </article>
+        <article class="stat-card">
+          <span class="status-label">Sequence</span>
+          <strong>Balanced / Strict / Dense</strong>
+          <p>Adjusts how aggressively the app filters scenes for spatial consistency.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel learn-more-section">
+      <div class="panel-heading">
+        <div>
+          <p class="panel-kicker">3</p>
+          <h2>Read the outputs</h2>
+        </div>
+        <p class="panel-copy">After searching, the app updates several connected views.</p>
+      </div>
+      <div class="stats-grid learn-more-stats">
+        <article class="stat-card">
+          <span class="status-label">Timeline</span>
+          <strong>When scenes happened</strong>
+          <p>Shows the distribution of overpasses across the selected time range.</p>
+        </article>
+        <article class="stat-card">
+          <span class="status-label">Statistics</span>
+          <strong>Quick summary</strong>
+          <p>Includes number of scenes, date range, revisit time, and average cloud cover.</p>
+        </article>
+        <article class="stat-card">
+          <span class="status-label">Results</span>
+          <strong>Scene list</strong>
+          <p>Select a scene to focus it on the map and preview it in the timelapse panel.</p>
+        </article>
+        <article class="stat-card">
+          <span class="status-label">Timelapse</span>
+          <strong>Main preview</strong>
+          <p>Play through the current sequence and inspect the selected frame in more detail.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel learn-more-section">
+      <div class="panel-heading">
+        <div>
+          <p class="panel-kicker">4</p>
+          <h2>Export options</h2>
+        </div>
+        <p class="panel-copy">The current app supports two download paths.</p>
+      </div>
+      <div class="analytics-grid learn-more-grid">
+        <article class="stat-card">
+          <span class="status-label">Download WebM</span>
+          <strong>Animation export</strong>
+          <p>Creates a video from the currently loaded sequence using the order shown in the timelapse panel.</p>
+        </article>
+        <article class="stat-card">
+          <span class="status-label">Download ZIP</span>
+          <strong>Frame export</strong>
+          <p>Packages all renderable frames into a single ZIP file for further analysis or external processing.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p>satelliteview</p>
+      <div class="site-footer-links">
+        <a href="./index.html">Back to tool</a>
+        <a href="./disclaimer.html">Disclaimer</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

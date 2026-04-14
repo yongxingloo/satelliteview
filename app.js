@@ -1,8 +1,8 @@
 const EARTH_SEARCH_API = "https://earth-search.aws.element84.com/v1/search";
 const TITILER_STAC_API = "https://titiler.xyz/stac/bbox";
 const DEFAULT_VIEW = {
-  center: [52.1326, 5.2913],
-  zoom: 7
+  center: [47.3769, 8.5417],
+  zoom: 12
 };
 
 const collectionSelect = document.querySelector("#collectionSelect");
@@ -38,6 +38,11 @@ const downloadLink = document.querySelector("#downloadLink");
 const map = L.map("map", {
   zoomControl: true
 }).setView(DEFAULT_VIEW.center, DEFAULT_VIEW.zoom);
+
+L.control.scale({
+  imperial: false,
+  metric: true
+}).addTo(map);
 
 const streetLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
@@ -1147,7 +1152,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 initializeDates();
-setBBox([4.6, 51.85, 5.95, 52.55], true);
+setBBox([8.49, 47.35, 8.58, 47.41], true);
 setStatus("Default area loaded. Search immediately or draw a different box on the map.");
 renderResults();
 setExportButtonState();
