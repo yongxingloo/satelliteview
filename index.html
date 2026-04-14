@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Satellite Timelapse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  >
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="page-shell">
+    <section class="hero-panel">
+      <p class="eyebrow">Satellite Timelapse</p>
+      <h1>Satellite database explorer.</h1>
+      <p class="hero-copy">
+        Select an area, load matching scenes, and preview the sequence as a timelapse.
+      </p>
+    </section>
+
+    <section class="workspace-grid">
+      <section class="panel controls-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-kicker">Search</p>
+            <h2>Settings</h2>
+          </div>
+          <p class="panel-copy">Choose a time range and filter the results.</p>
+        </div>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Collection</span>
+            <select id="collectionSelect">
+              <option value="sentinel-2-l2a" selected>Sentinel-2 L2A</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Start date</span>
+            <input id="startDateInput" type="date">
+          </label>
+
+          <label class="field">
+            <span>End date</span>
+            <input id="endDateInput" type="date">
+          </label>
+
+          <label class="field">
+            <span>Cloud cover max (%)</span>
+            <input id="cloudInput" type="number" min="0" max="100" value="25">
+          </label>
+
+          <label class="field">
+            <span>Scene limit</span>
+            <input id="limitInput" type="number" min="5" max="60" value="18">
+          </label>
+
+          <label class="field">
+            <span>Sequence</span>
+            <select id="sequenceModeSelect">
+              <option value="balanced" selected>Balanced</option>
+              <option value="strict">Strict alignment</option>
+              <option value="dense">Dense timeline</option>
+            </select>
+          </label>
+
+          <label class="field field-wide">
+            <span>Area</span>
+            <output id="bboxOutput">No area selected yet.</output>
+          </label>
+        </div>
+
+        <div class="action-row">
+          <button id="drawAreaButton" type="button" class="button button-primary">Draw area</button>
+          <button id="viewAreaButton" type="button" class="button">Use map view</button>
+          <button id="clearAreaButton" type="button" class="button">Clear</button>
+          <button id="searchButton" type="button" class="button button-strong">Search</button>
+        </div>
+
+        <div class="status-strip">
+          <div>
+            <span class="status-label">Status</span>
+            <strong id="statusText">Choose an area to begin.</strong>
+          </div>
+          <div>
+            <span class="status-label">Results</span>
+            <strong id="resultCountText">0 scenes loaded</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel map-panel">
+        <div class="panel-heading compact">
+          <div>
+            <p class="panel-kicker">Map</p>
+            <h2>Area</h2>
+          </div>
+          <p class="panel-copy">Draw a rectangle or use the current view.</p>
+        </div>
+        <div class="map-toolbar" role="group" aria-label="Map style">
+          <button id="streetsLayerButton" type="button" class="map-toggle">Streets</button>
+          <button id="satelliteLayerButton" type="button" class="map-toggle active">Satellite</button>
+        </div>
+        <div id="map" class="map-frame" aria-label="Satellite search map"></div>
+      </section>
+
+      <section class="panel analytics-panel">
+        <div class="panel-heading compact">
+          <div>
+            <p class="panel-kicker">Overview</p>
+            <h2>Timeline</h2>
+          </div>
+          <p class="panel-copy">See when scenes were captured and how the current set is distributed over time.</p>
+        </div>
+
+        <div class="analytics-grid">
+          <div class="stats-grid" id="statsGrid">
+            <article class="stat-card">
+              <span class="status-label">Scenes</span>
+              <strong>0</strong>
+              <p>No search yet</p>
+            </article>
+            <article class="stat-card">
+              <span class="status-label">Range</span>
+              <strong>--</strong>
+              <p>Waiting for results</p>
+            </article>
+            <article class="stat-card">
+              <span class="status-label">Cadence</span>
+              <strong>--</strong>
+              <p>Average revisit</p>
+            </article>
+            <article class="stat-card">
+              <span class="status-label">Cloud</span>
+              <strong>--</strong>
+              <p>Average cloud cover</p>
+            </article>
+          </div>
+
+          <div class="timeline-panel">
+            <div class="timeline-scale" id="timelineScale"></div>
+            <div class="timeline-track" id="timelineTrack" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="media-row">
+        <section class="panel results-panel">
+          <div class="panel-heading compact">
+            <div>
+              <p class="panel-kicker">Scenes</p>
+              <h2>Results</h2>
+            </div>
+            <p class="panel-copy">Select a scene to inspect it on the map and in the player.</p>
+          </div>
+          <div id="resultsList" class="results-list" aria-live="polite"></div>
+        </section>
+
+        <section class="panel player-panel">
+          <div class="panel-heading compact">
+            <div>
+              <p class="panel-kicker">Preview</p>
+              <h2>Timelapse</h2>
+            </div>
+          <p class="panel-copy">Play the sequence, export a video, or download the frames.</p>
+          </div>
+ 
+          <div class="player-stage">
+            <img id="playerImage" alt="Selected satellite frame preview">
+            <div id="playerPlaceholder" class="player-placeholder">
+              Search an area to populate the timelapse frames.
+            </div>
+          </div>
+
+          <div class="player-meta">
+            <div>
+              <span class="status-label">Frame</span>
+              <strong id="playerTitle">No frame selected</strong>
+            </div>
+            <div>
+              <span class="status-label">Details</span>
+              <strong id="playerSubtitle">Awaiting overpass search</strong>
+            </div>
+          </div>
+
+          <div class="player-controls">
+            <button id="playButton" type="button" class="button button-primary" disabled>Play</button>
+            <button id="exportButton" type="button" class="button" disabled>Download WebM</button>
+            <button id="downloadFramesButton" type="button" class="button" disabled>Download ZIP</button>
+            <label class="inline-field">
+              <span>Speed</span>
+              <input id="speedInput" type="range" min="1" max="6" value="2">
+            </label>
+            <label class="inline-field grow">
+              <span>Frame</span>
+              <input id="timelineInput" type="range" min="0" max="0" value="0" disabled>
+            </label>
+          </div>
+
+          <a id="downloadLink" class="download-link" href="#" target="_blank" rel="noreferrer noopener" hidden>Open frame</a>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
