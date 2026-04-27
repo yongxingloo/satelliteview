@@ -541,6 +541,12 @@ function buildPlanetaryComputerPreviewUrl(item, bbox) {
   return `${PLANETARY_COMPUTER_DATA_API}/bbox/${bboxPath}/900x900.png?${params.toString()}`;
 }
 
+function getSelectedCollectionIds() {
+  return collectionSelect.value === "merged"
+    ? ["sentinel-2-l2a", "landsat-c2-l2"]
+    : [collectionSelect.value];
+}
+
 // Resolve a direct preview URL for a scene, preferring AOI-cropped TiTiler output.
 function resolveFrameUrl(item) {
   const frameSource = resolveFrameSource(item);
@@ -578,7 +584,7 @@ function resolveFrameUrl(item) {
 }
 
 // Convert raw STAC features into a normalized scene object used by the UI.
-function mapFeatureToScene(feature) {
+function mapFeatureToScene(feature, requestedCollectionId = "") {
   // Treat incoming feature as a STAC item for readability.
   const item = feature;
   const properties = item.properties ?? {};
@@ -586,7 +592,7 @@ function mapFeatureToScene(feature) {
   const sceneDate = properties.datetime ?? properties["start_datetime"] ?? "";
   const cloudCover = Number(properties["eo:cloud_cover"]);
   // Fall back to current selected collection/provider when metadata is missing.
-  const collection = item.collection ?? collectionSelect.value;
+  const collection = item.collection ?? requestedCollectionId ?? collectionSelect.value;
   const provider = properties.platform ?? properties.constellation ?? "Satellite scene";
   // Resolve preview URL and spatial coverage metrics used for filtering.
   const frameUrl = resolveFrameUrl(item);
@@ -618,6 +624,12 @@ function resolveSearchApi(collectionId) {
   return collectionId === "landsat-c2-l2" ? PLANETARY_COMPUTER_STAC_API : EARTH_SEARCH_API;
 }
 
+function buildSearchPayloadForCollection(collectionId) {
+  const payload = buildSearchPayload();
+  payload.collections = [collectionId];
+  return payload;
+}
+
 // Keep one best scene per day to avoid redundant frames.
 function dedupeScenesByDay(scenes) {
   // Keep only one representative scene per calendar day.
@@ -625,7 +637,10 @@ function dedupeScenesByDay(scenes) {
 
   scenes.forEach((scene) => {
     // Use date portion as key; fallback to id when datetime is unavailable.
-    const dayKey = scene.datetime ? scene.datetime.slice(0, 10) : scene.id;
+    const baseDayKey = scene.datetime ? scene.datetime.slice(0, 10) : scene.id;
+    const dayKey = collectionSelect.value === "merged"
+      ? `${baseDayKey}:${scene.collection}`
+      : baseDayKey;
     const existing = bestByDay.get(dayKey);
 
     // First scene for that day wins temporarily.
@@ -1060,11 +1075,12 @@ function startPlayback() {
 
 // Run a STAC search, transform results, and refresh the app UI.
 async function searchScenes() {
-  let payload;
+  let collectionIds;
 
   try {
-    // Validate UI inputs and construct request body.
-    payload = buildSearchPayload();
+    // Validate UI inputs and decide which collection searches to run.
+    buildSearchPayload();
+    collectionIds = getSelectedCollectionIds();
   } catch (error) {
     // Show validation feedback without making a network call.
     setStatus(error.message);
@@ -1078,23 +1094,26 @@ async function searchScenes() {
   setStatus("Searching public STAC scenes for overpasses that intersect the selected area...");
 
   try {
-    // Query the provider-specific STAC API with the generated payload.
-    const response = await fetch(resolveSearchApi(collectionSelect.value), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
+    // Query each provider-specific STAC API and merge the normalized results.
+    const searchResponses = await Promise.all(collectionIds.map(async (collectionId) => {
+      const response = await fetch(resolveSearchApi(collectionId), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(buildSearchPayloadForCollection(collectionId))
+      });
 
-    if (!response.ok) {
-      throw new Error(`Search failed with HTTP ${response.status}.`);
-    }
+      if (!response.ok) {
+        throw new Error(`${collectionId} search failed with HTTP ${response.status}.`);
+      }
 
-    // Convert API response into app-specific scene objects.
-    const data = await response.json();
-    const features = Array.isArray(data.features) ? data.features : [];
-    const rawScenes = features.map(mapFeatureToScene);
+      const data = await response.json();
+      const features = Array.isArray(data.features) ? data.features : [];
+      return features.map((feature) => mapFeatureToScene(feature, collectionId));
+    }));
+
+    const rawScenes = searchResponses.flat();
     // Apply sequence mode filtering and initialize selection.
     state.items = refineSceneSequence(rawScenes);
     state.selectedIndex = state.items.length ? 0 : -1;
@@ -1104,7 +1123,10 @@ async function searchScenes() {
     if (state.items.length) {
       // Include active mode in success status for user clarity.
       const modeLabel = sequenceModeSelect.options[sequenceModeSelect.selectedIndex]?.text ?? "Balanced";
-      setStatus(`Loaded ${state.items.length} overpasses in ${modeLabel.toLowerCase()} mode using the same AOI crop for each frame.`);
+      const sourceLabel = collectionSelect.value === "merged"
+        ? "across Sentinel-2 and Landsat"
+        : "using the same AOI crop for each frame";
+      setStatus(`Loaded ${state.items.length} overpasses in ${modeLabel.toLowerCase()} mode ${sourceLabel}.`);
     } else {
       setStatus("The search completed, but no scenes matched the current date and cloud filters.");
     }
