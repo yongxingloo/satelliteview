@@ -1179,24 +1179,6 @@ async function searchScenes() {
     // Query each provider-specific STAC API and merge the normalized results.
     const searchResponses = await Promise.all(collectionIds.map((collectionId) => fetchPaginatedScenesForCollection(collectionId)));
 
-    const searchResponses = await Promise.all(collectionIds.map(async (collectionId) => {
-      const response = await fetch(resolveSearchApi(collectionId), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(buildSearchPayloadForCollection(collectionId))
-      });
-
-      if (!response.ok) {
-        throw new Error(`${collectionId} search failed with HTTP ${response.status}.`);
-      }
-
-      const data = await response.json();
-      const features = Array.isArray(data.features) ? data.features : [];
-      return features.map((feature) => mapFeatureToScene(feature, collectionId));
-    }));
-
     const rawScenes = searchResponses.flat();
     // Apply sequence mode filtering and initialize selection.
     state.items = refineSceneSequence(rawScenes);
@@ -1211,7 +1193,6 @@ async function searchScenes() {
         ? "across Sentinel-2 and Landsat"
         : "using the same AOI crop for each frame";
       setStatus(`Loaded ${state.items.length} scenes after filtering ${rawScenes.length} fetched overpasses in ${modeLabel.toLowerCase()} mode ${sourceLabel}.`);
-      setStatus(`Loaded ${state.items.length} overpasses in ${modeLabel.toLowerCase()} mode ${sourceLabel}.`);
     } else {
       setStatus("The search completed, but no scenes matched the current date and cloud filters.");
     }
