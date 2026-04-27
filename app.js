@@ -287,6 +287,11 @@ function clampNumber(value, min, max, fallback) {
   return Math.max(min, Math.min(max, numeric));
 }
 
+// Read the requested maximum number of scenes to keep after paginated fetches.
+function getRequestedSceneLimit() {
+  return clampNumber(limitInput.value, 5, 500, 120);
+}
+
 // Build and validate the STAC search request payload from the UI.
 function buildSearchPayload() {
   const startDate = startDateInput.value;
@@ -309,7 +314,7 @@ function buildSearchPayload() {
 
   // Read optional numeric filters with guardrails.
   const maxCloud = clampNumber(cloudInput.value, 0, 100, 25);
-  const limit = clampNumber(limitInput.value, 5, 60, 18);
+  const limit = getRequestedSceneLimit();
 
   // Build STAC POST payload with ascending date sort and cloud filter.
   return {
@@ -628,6 +633,83 @@ function buildSearchPayloadForCollection(collectionId) {
   const payload = buildSearchPayload();
   payload.collections = [collectionId];
   return payload;
+}
+
+// Convert a STAC next link into the next fetch request.
+function buildNextPageRequest(nextLink, fallbackUrl, fallbackPayload, remainingLimit) {
+  if (!nextLink?.href || remainingLimit <= 0) {
+    return null;
+  }
+
+  const method = (nextLink.method ?? (nextLink.body ? "POST" : "GET")).toUpperCase();
+  const url = new URL(nextLink.href, fallbackUrl);
+
+  if (method === "GET") {
+    url.searchParams.set("limit", String(Math.min(remainingLimit, 100)));
+    return {
+      url: url.toString(),
+      options: {
+        method: "GET"
+      }
+    };
+  }
+
+  const payload = nextLink.body
+    ? { ...nextLink.body }
+    : { ...fallbackPayload };
+  payload.limit = Math.min(remainingLimit, 100);
+
+  return {
+    url: url.toString(),
+    options: {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    }
+  };
+}
+
+// Fetch enough STAC pages to satisfy the requested scene limit.
+async function fetchPaginatedScenesForCollection(collectionId) {
+  const totalLimit = getRequestedSceneLimit();
+  const baseUrl = resolveSearchApi(collectionId);
+  const initialPayload = buildSearchPayloadForCollection(collectionId);
+  initialPayload.limit = Math.min(totalLimit, 100);
+
+  let nextRequest = {
+    url: baseUrl,
+    options: {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(initialPayload)
+    }
+  };
+
+  const features = [];
+
+  while (nextRequest && features.length < totalLimit) {
+    const response = await fetch(nextRequest.url, nextRequest.options);
+
+    if (!response.ok) {
+      throw new Error(`${collectionId} search failed with HTTP ${response.status}.`);
+    }
+
+    const data = await response.json();
+    const pageFeatures = Array.isArray(data.features) ? data.features : [];
+    const remainingSlots = totalLimit - features.length;
+    features.push(...pageFeatures.slice(0, remainingSlots));
+
+    const nextLink = Array.isArray(data.links)
+      ? data.links.find((link) => link.rel === "next")
+      : null;
+    nextRequest = buildNextPageRequest(nextLink, baseUrl, initialPayload, totalLimit - features.length);
+  }
+
+  return features.map((feature) => mapFeatureToScene(feature, collectionId));
 }
 
 // Keep one best scene per day to avoid redundant frames.
@@ -1095,23 +1177,7 @@ async function searchScenes() {
 
   try {
     // Query each provider-specific STAC API and merge the normalized results.
-    const searchResponses = await Promise.all(collectionIds.map(async (collectionId) => {
-      const response = await fetch(resolveSearchApi(collectionId), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(buildSearchPayloadForCollection(collectionId))
-      });
-
-      if (!response.ok) {
-        throw new Error(`${collectionId} search failed with HTTP ${response.status}.`);
-      }
-
-      const data = await response.json();
-      const features = Array.isArray(data.features) ? data.features : [];
-      return features.map((feature) => mapFeatureToScene(feature, collectionId));
-    }));
+    const searchResponses = await Promise.all(collectionIds.map((collectionId) => fetchPaginatedScenesForCollection(collectionId)));
 
     const rawScenes = searchResponses.flat();
     // Apply sequence mode filtering and initialize selection.
@@ -1126,7 +1192,7 @@ async function searchScenes() {
       const sourceLabel = collectionSelect.value === "merged"
         ? "across Sentinel-2 and Landsat"
         : "using the same AOI crop for each frame";
-      setStatus(`Loaded ${state.items.length} overpasses in ${modeLabel.toLowerCase()} mode ${sourceLabel}.`);
+      setStatus(`Loaded ${state.items.length} scenes after filtering ${rawScenes.length} fetched overpasses in ${modeLabel.toLowerCase()} mode ${sourceLabel}.`);
     } else {
       setStatus("The search completed, but no scenes matched the current date and cloud filters.");
     }
