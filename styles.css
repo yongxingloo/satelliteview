@@ -173,6 +173,12 @@ body {
   color: var(--muted);
 }
 
+.field-note {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
 .field input,
 .field select,
 .field output,
