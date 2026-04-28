@@ -1177,6 +1177,7 @@ async function searchScenes() {
 
   try {
     // Query each provider-specific STAC API and merge the normalized results.
+    const requestedLimit = getRequestedSceneLimit();
     const searchResponses = await Promise.all(collectionIds.map((collectionId) => fetchPaginatedScenesForCollection(collectionId)));
 
     const rawScenes = searchResponses.flat();
@@ -1192,7 +1193,10 @@ async function searchScenes() {
       const sourceLabel = collectionSelect.value === "merged"
         ? "across Sentinel-2 and Landsat"
         : "using the same AOI crop for each frame";
-      setStatus(`Loaded ${state.items.length} scenes after filtering ${rawScenes.length} fetched overpasses in ${modeLabel.toLowerCase()} mode ${sourceLabel}.`);
+      const limitHint = rawScenes.length >= requestedLimit
+        ? ` The search hit the current scene limit of ${requestedLimit}; increase it to look farther back across long date ranges.`
+        : "";
+      setStatus(`Loaded ${state.items.length} scenes after filtering ${rawScenes.length} fetched overpasses in ${modeLabel.toLowerCase()} mode ${sourceLabel}.${limitHint}`);
     } else {
       setStatus("The search completed, but no scenes matched the current date and cloud filters.");
     }

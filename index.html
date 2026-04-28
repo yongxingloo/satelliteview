@@ -96,7 +96,8 @@
           <!-- Upper limit for number of scenes requested from API. -->
           <label class="field">
             <span>Scene limit</span>
-            <input id="limitInput" type="number" min="5" max="500" value="30">
+            <input id="limitInput" type="number" min="5" max="500" value="120">
+            <small class="field-note">This caps how many overpasses are fetched, even if the date range spans multiple years.</small>
           </label>
 
           <!-- Strategy selector controlling timelapse scene filtering strictness. -->
